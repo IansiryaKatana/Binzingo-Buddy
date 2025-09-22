@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Spade, Heart, Diamond, Club } from 'lucide-react'
 import { toast } from 'sonner'
 import heroImage from '@/assets/casino-hero-bg.jpg'
 
@@ -58,21 +58,39 @@ export default function Auth() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 text-center">
-        {/* Logo/Title */}
-        <div className="mb-12">
-          <h1 className="text-6xl md:text-8xl font-bold text-yellow-400 mb-4 drop-shadow-2xl">
-            BINZINGO
-          </h1>
-          <p className="text-xl text-yellow-200">Card Gaming Platform</p>
+      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        {/* Floating Card Suits - same as homepage */}
+        <div className="absolute -top-8 -left-8 opacity-20 animate-pulse">
+          <Spade className="w-12 h-12 text-gold" />
+        </div>
+        <div className="absolute -top-4 -right-12 opacity-20 animate-pulse delay-1000">
+          <Heart className="w-10 h-10 text-gold" />
+        </div>
+        <div className="absolute -bottom-6 -left-4 opacity-20 animate-pulse delay-500">
+          <Diamond className="w-8 h-8 text-gold" />
+        </div>
+        <div className="absolute -bottom-8 -right-8 opacity-20 animate-pulse delay-1500">
+          <Club className="w-14 h-14 text-gold" />
         </div>
 
-        {/* Auth buttons */}
-        <div className="space-y-4">
+        {/* Title - same styling as homepage */}
+        <div className="mb-16">
+          <h1 className="text-5xl md:text-7xl font-bold mb-4 text-foreground font-inter-tight">
+            Binzingo
+            <span className="text-gold font-extrabold drop-shadow-lg"> Cardy</span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 font-medium">
+            Professional Card Game Scorer
+          </p>
+        </div>
+
+        {/* Auth buttons - 2025 UI standards */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
           <Button
             onClick={handleGoogleSignIn}
             disabled={loading || isAnimating}
-            className="w-full max-w-sm bg-white hover:bg-gray-50 text-gray-900 font-semibold py-4 px-8 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-3"
+            className="w-full sm:w-auto bg-white hover:bg-gray-50 text-gray-900 font-semibold py-4 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-3 min-w-[200px]"
           >
             {loading || isAnimating ? (
               <>
@@ -95,7 +113,7 @@ export default function Auth() {
           <Button
             onClick={handleGoogleSignIn}
             disabled={loading || isAnimating}
-            className="w-full max-w-sm bg-transparent border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-semibold py-4 px-8 rounded-xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+            className="w-full sm:w-auto bg-transparent border-2 border-gold text-gold hover:bg-gold hover:text-black font-semibold py-4 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 min-w-[200px]"
           >
             Create Account
           </Button>
