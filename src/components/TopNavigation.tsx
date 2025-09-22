@@ -4,6 +4,7 @@ import { Target, Home, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { UserProfile } from "@/components/UserProfile";
+import { GameInvitations } from "@/components/GameInvitations";
 
 interface TopNavigationProps {
   gameId?: string;
@@ -59,7 +60,10 @@ export const TopNavigation = ({
         )}
         
         {user ? (
-          <UserProfile />
+          <>
+            <GameInvitations />
+            <UserProfile />
+          </>
         ) : (
           <AuthDialog>
             <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10">

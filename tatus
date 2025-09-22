@@ -1,0 +1,5 @@
+[33mb9efff4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m Fix user_stats query errors and simplify online players functionality
+[33m36c2e72[m Fix online game issues: score limit input, host ready button, top navigation, and player display
+[33m994c120[m Fix Netlify secrets scanning and use environment variables
+[33mfe06401[m Add batch files and update project files
+[33m5a06eff[m Initial commit: Binzingo Cardy - Professional Card Game Scorer with enhanced UI/UX

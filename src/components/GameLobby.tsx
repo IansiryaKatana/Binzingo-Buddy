@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useCardGame } from '@/hooks/useCardGame'
 import { ScoreReference } from '@/components/ScoreReference'
 import { UserProfile } from '@/components/UserProfile'
+import { GameInvitations } from '@/components/GameInvitations'
 import { 
   Users, 
   Play, 
@@ -156,6 +157,8 @@ export function GameLobby({ gameId, onGameStart }: GameLobbyProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <GameInvitations />
+            
             <Dialog>
               <DialogTrigger asChild>
                 <Button

@@ -47,11 +47,21 @@ CREATE TABLE IF NOT EXISTS user_stats (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create online_users table for tracking who's currently online
+CREATE TABLE IF NOT EXISTS online_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+  username TEXT NOT NULL,
+  last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Enable Row Level Security on all tables
 ALTER TABLE games ENABLE ROW LEVEL SECURITY;
 ALTER TABLE game_players ENABLE ROW LEVEL SECURITY;
 ALTER TABLE game_states ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_stats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE online_users ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for games table
 CREATE POLICY "Users can view all games" ON games
@@ -111,6 +121,19 @@ CREATE POLICY "Users can update their own stats" ON user_stats
 CREATE POLICY "Users can insert their own stats" ON user_stats
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- RLS Policies for online_users table
+CREATE POLICY "Users can view all online users" ON online_users
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can update their own online status" ON online_users
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own online status" ON online_users
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own online status" ON online_users
+  FOR DELETE USING (auth.uid() = user_id);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_games_status ON games(status);
 CREATE INDEX IF NOT EXISTS idx_games_created_by ON games(created_by);
@@ -123,6 +146,9 @@ CREATE INDEX IF NOT EXISTS idx_game_states_game_id ON game_states(game_id);
 CREATE INDEX IF NOT EXISTS idx_game_states_updated_at ON game_states(updated_at);
 
 CREATE INDEX IF NOT EXISTS idx_user_stats_user_id ON user_stats(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_online_users_user_id ON online_users(user_id);
+CREATE INDEX IF NOT EXISTS idx_online_users_last_seen ON online_users(last_seen);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -156,6 +182,25 @@ $$ language 'plpgsql';
 CREATE TRIGGER create_user_stats_trigger
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION create_user_stats();
+
+-- Create function to automatically create online status when user signs in
+CREATE OR REPLACE FUNCTION create_online_status()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO online_users (user_id, username) 
+    VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'username', NEW.email))
+    ON CONFLICT (user_id) 
+    DO UPDATE SET 
+        last_seen = NOW(),
+        username = COALESCE(NEW.raw_user_meta_data->>'username', NEW.email);
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Create trigger to create online status on user creation
+CREATE TRIGGER create_online_status_trigger
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION create_online_status();
 
 -- Create function to update current_players count
 CREATE OR REPLACE FUNCTION update_game_player_count()
