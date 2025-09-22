@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://rdwrhuipyhbvlztbjdgp.supabase.co'
+const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://rdwrhuipyhbvlztbjdgp.supabase.co'
 const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkd3JodWlweWhidmx6dGJqZGdwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODA5NzE2OCwiZXhwIjoyMDczNjczMTY4fQ.w7xnh6CDixYkYxN8crx13PmeORyezg0_brX_GU-mS24'
 
 // Create Supabase client with service role key
