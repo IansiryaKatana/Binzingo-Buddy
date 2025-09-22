@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import heroImage from '@/assets/casino-hero-bg.jpg'
 
 export default function Auth() {
   const { user, signInWithGoogle, loading } = useAuth()
@@ -45,52 +46,15 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-green-700 relative overflow-hidden flex items-center justify-center">
-      {/* Animated background elements */}
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
+      {/* Background image - same as home page */}
       <div className="absolute inset-0">
-        {/* Multiple layered glows */}
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[800px] h-[800px] bg-green-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-yellow-400/15 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-emerald-400/25 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        
-        {/* Floating card suit symbols */}
-        <div className="absolute top-20 left-20 text-red-500 animate-bounce" style={{ animationDelay: '0.5s' }}>
-          <div className="text-6xl">♥</div>
-        </div>
-        <div className="absolute top-32 right-24 text-red-500 animate-bounce" style={{ animationDelay: '1s' }}>
-          <div className="text-4xl">♦</div>
-        </div>
-        <div className="absolute top-40 left-32 text-yellow-400 animate-bounce" style={{ animationDelay: '1.5s' }}>
-          <div className="text-5xl">♣</div>
-        </div>
-        <div className="absolute top-24 right-32 text-yellow-400 animate-bounce" style={{ animationDelay: '2s' }}>
-          <div className="text-7xl">♠</div>
-        </div>
-        <div className="absolute bottom-32 left-24 text-red-500 animate-bounce" style={{ animationDelay: '0.8s' }}>
-          <div className="text-4xl">♥</div>
-        </div>
-        <div className="absolute bottom-40 right-20 text-yellow-400 animate-bounce" style={{ animationDelay: '1.2s' }}>
-          <div className="text-3xl">♣</div>
-        </div>
-        <div className="absolute top-1/2 left-10 text-red-500 animate-bounce" style={{ animationDelay: '1.8s' }}>
-          <div className="text-2xl">♦</div>
-        </div>
-        <div className="absolute top-1/3 right-10 text-yellow-400 animate-bounce" style={{ animationDelay: '2.5s' }}>
-          <div className="text-3xl">♠</div>
-        </div>
-        
-        {/* Swirling golden lines */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div className="w-[800px] h-[800px] border border-yellow-400/30 rounded-full animate-spin" style={{ animationDuration: '25s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-yellow-400/20 rounded-full animate-spin" style={{ animationDuration: '20s', animationDirection: 'reverse' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-yellow-400/15 rounded-full animate-spin" style={{ animationDuration: '15s' }}></div>
-        </div>
-        
-        {/* Floating particles */}
-        <div className="absolute top-1/4 left-1/3 w-2 h-2 bg-yellow-400/60 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
-        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-red-400/60 rounded-full animate-ping" style={{ animationDelay: '1.5s' }}></div>
-        <div className="absolute bottom-1/3 left-1/4 w-3 h-3 bg-yellow-400/40 rounded-full animate-ping" style={{ animationDelay: '2.5s' }}></div>
-        <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-red-400/50 rounded-full animate-ping" style={{ animationDelay: '3s' }}></div>
+        <img 
+          src={heroImage} 
+          alt="Casino Background" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/60"></div>
       </div>
 
       {/* Main content */}
