@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         'sans': ['Inter Tight', 'system-ui', 'sans-serif'],
         'inter-tight': ['Inter Tight', 'system-ui', 'sans-serif'],
+        'playfair': ['Playfair Display', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",

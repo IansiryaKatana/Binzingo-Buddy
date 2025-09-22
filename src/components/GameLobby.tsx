@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import { useCardGame } from '@/hooks/useCardGame'
 import { ScoreReference } from '@/components/ScoreReference'
 import { UserProfile } from '@/components/UserProfile'
 import { GameInvitations } from '@/components/GameInvitations'
+import { CasinoPreloader } from '@/components/CasinoPreloader'
 import { 
   Users, 
   Play, 
@@ -38,6 +39,27 @@ export function GameLobby({ gameId, onGameStart }: GameLobbyProps) {
   const [isJoining, setIsJoining] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
   const [isStarting, setIsStarting] = useState(false)
+  const [showPreloader, setShowPreloader] = useState(false)
+  const [autoLaunchTriggered, setAutoLaunchTriggered] = useState(false)
+
+  // Auto-launch logic when all players are ready
+  useEffect(() => {
+    if (!game || !players || autoLaunchTriggered) return
+
+    const allPlayersReady = players.every(player => player.is_ready)
+    const hasMinimumPlayers = players.length >= 2
+    const isHost = players.find(p => p.user_id === user?.id)?.is_host
+
+    if (allPlayersReady && hasMinimumPlayers && isHost) {
+      setAutoLaunchTriggered(true)
+      setShowPreloader(true)
+      
+      // Auto-start the game after a short delay
+      setTimeout(() => {
+        handleStartGame()
+      }, 2000)
+    }
+  }, [game, players, user?.id, autoLaunchTriggered])
 
   if (loading) {
     return (
@@ -132,6 +154,7 @@ export function GameLobby({ gameId, onGameStart }: GameLobbyProps) {
       onGameStart()
     } finally {
       setIsStarting(false)
+      setShowPreloader(false)
     }
   }
 
@@ -391,6 +414,13 @@ export function GameLobby({ gameId, onGameStart }: GameLobbyProps) {
           </div>
         )}
       </div>
+      
+      {/* Casino Preloader for auto-launch */}
+      <CasinoPreloader 
+        isVisible={showPreloader}
+        message="Game Starting..."
+        onComplete={() => setShowPreloader(false)}
+      />
     </div>
   )
 }
