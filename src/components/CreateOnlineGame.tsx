@@ -148,17 +148,17 @@ export default function CreateOnlineGame() {
                     <Clock className="w-4 h-4 text-gold" />
                     Score Limit
                   </Label>
-                  <Select value={scoreLimit.toString()} onValueChange={(value) => setScoreLimit(parseInt(value))}>
-                    <SelectTrigger className="bg-muted/50 border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="50">50 Points</SelectItem>
-                      <SelectItem value="100">100 Points</SelectItem>
-                      <SelectItem value="150">150 Points</SelectItem>
-                      <SelectItem value="200">200 Points</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="score-limit"
+                    type="number"
+                    min="10"
+                    max="1000"
+                    placeholder="Enter score limit (e.g., 100)"
+                    value={scoreLimit}
+                    onChange={(e) => setScoreLimit(parseInt(e.target.value) || 100)}
+                    className="bg-muted/50 border-border"
+                    required
+                  />
                 </div>
               </div>
 

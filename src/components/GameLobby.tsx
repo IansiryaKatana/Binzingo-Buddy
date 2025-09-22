@@ -1,11 +1,15 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useOnlineGame, GamePlayer } from '@/hooks/useOnlineGame'
 import { useAuth } from '@/hooks/useAuth'
 import { useCardGame } from '@/hooks/useCardGame'
+import { ScoreReference } from '@/components/ScoreReference'
+import { UserProfile } from '@/components/UserProfile'
 import { 
   Users, 
   Play, 
@@ -14,7 +18,10 @@ import {
   Clock, 
   Target,
   CheckCircle,
-  Circle
+  Circle,
+  ArrowLeft,
+  BookOpen,
+  User
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -24,6 +31,7 @@ interface GameLobbyProps {
 }
 
 export function GameLobby({ gameId, onGameStart }: GameLobbyProps) {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { game, players, loading, joinGame, leaveGame, toggleReady, startGame } = useOnlineGame(gameId)
   const [isJoining, setIsJoining] = useState(false)
@@ -98,8 +106,28 @@ export function GameLobby({ gameId, onGameStart }: GameLobbyProps) {
         luckerBonanzaUsed: false
       }))
 
-      // Use the existing useCardGame hook to initialize the game
-      // This will be handled by the parent component
+      // Start the game in the database
+      await startGame({
+        deck: [],
+        discardPile: [],
+        players: onlinePlayers.map(p => ({
+          id: p.id,
+          name: p.name,
+          hand: [],
+          hasDeclaredDanger: false,
+          isCardless: false
+        })),
+        currentPlayerIndex: 0,
+        direction: 1,
+        gamePhase: 'playing',
+        pendingPunishment: { type: null, amount: 0 },
+        activeCommand: { type: null, value: null, remainingTurns: 0 },
+        lastPlayedCards: [],
+        roundWinner: null,
+        turnTimer: { timeRemaining: 45, isActive: true }
+      })
+
+      // Notify parent component that game has started
       onGameStart()
     } finally {
       setIsStarting(false)
@@ -113,6 +141,60 @@ export function GameLobby({ gameId, onGameStart }: GameLobbyProps) {
   return (
     <div className="min-h-screen bg-gradient-felt p-4">
       <div className="container mx-auto max-w-4xl">
+        {/* Top Navigation Bar */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/online')}
+              size="sm"
+              className="border-white/30 text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Games
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-white/30 text-white hover:bg-white/10"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Rules
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Game Rules & Scoring</DialogTitle>
+                </DialogHeader>
+                <ScoreReference />
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-white/30 text-white hover:bg-white/10"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>User Profile</DialogTitle>
+                </DialogHeader>
+                <UserProfile />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
         {/* Game Header */}
         <Card className="mb-6 bg-white/10 border-white/20 backdrop-blur-sm">
           <CardHeader>
@@ -147,29 +229,27 @@ export function GameLobby({ gameId, onGameStart }: GameLobbyProps) {
               
               {currentPlayer && (
                 <div className="flex gap-2">
-                  {!isHost && (
-                    <Button
-                      variant="outline"
-                      onClick={handleToggleReady}
-                      className={`border-white/30 ${
-                        currentPlayer.is_ready 
-                          ? 'bg-green-500/20 text-green-400 border-green-400/50' 
-                          : 'text-white hover:bg-white/10'
-                      }`}
-                    >
-                      {currentPlayer.is_ready ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Ready
-                        </>
-                      ) : (
-                        <>
-                          <Circle className="w-4 h-4 mr-2" />
-                          Not Ready
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    onClick={handleToggleReady}
+                    className={`border-white/30 ${
+                      currentPlayer.is_ready 
+                        ? 'bg-green-500/20 text-green-400 border-green-400/50' 
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {currentPlayer.is_ready ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Ready
+                      </>
+                    ) : (
+                      <>
+                        <Circle className="w-4 h-4 mr-2" />
+                        Not Ready
+                      </>
+                    )}
+                  </Button>
                   
                   {isHost && canStart && (
                     <Button
