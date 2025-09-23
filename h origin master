@@ -1,1 +1,5 @@
-[33m5a06eff[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m Initial commit: Binzingo Cardy - Professional Card Game Scorer with enhanced UI/UX
+[33m3e6284b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m Match homepage design: Add floating card suit icons, same title styling, and modern 2025 UI buttons with proper alignment
+[33m78c8894[m Use same background image as home page on auth page for consistency
+[33m23abecb[m Clean minimal auth page: Game-themed background with floating card suits, simple Google login/signup buttons
+[33m6e55f5c[m Redesign auth page: NFT marketplace style with cascading overlapping cards, removed top bar, positioned buttons properly
+[33m937af7e[m Complete auth page redesign: Modern gradient UI with animated elements, feature cards, and premium gaming aesthetic
