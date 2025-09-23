@@ -370,18 +370,18 @@ export default function GamePlay() {
                       onClick={submitRound}
                       disabled={!winnerId || isSubmitting}
                       variant="casino"
-                      className={`w-full ${isMobile ? 'text-base py-3' : 'text-lg py-4'} bg-gold hover:bg-gold-dark text-black font-semibold`}
+                      className="w-full bg-gold hover:bg-gold-dark text-black font-semibold"
                     >
-                      <Save className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-2`} />
+                      <Save className="w-4 h-4 mr-2" />
                       {isSubmitting ? "Submitting..." : "Submit Round"}
                     </Button>
                     
                     <Button
                       variant="outline"
                       onClick={resetRound}
-                      className={`w-full ios-button text-white border-white/30`}
+                      className="w-full ios-button text-white border-white/30"
                     >
-                      <RotateCcw className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-2`} />
+                      <RotateCcw className="w-4 h-4 mr-2" />
                       Reset Form
                     </Button>
                   </div>
