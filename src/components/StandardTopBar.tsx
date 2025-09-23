@@ -12,6 +12,7 @@ interface StandardTopBarProps {
   title?: string;
   showBackButton?: boolean;
   backPath?: string;
+  onBackClick?: () => void;
   showHelp?: boolean;
   showProfile?: boolean;
   showGameInvitations?: boolean;
@@ -21,6 +22,7 @@ export const StandardTopBar = ({
   title,
   showBackButton = true,
   backPath,
+  onBackClick,
   showHelp = true,
   showProfile = true,
   showGameInvitations = true
@@ -31,7 +33,9 @@ export const StandardTopBar = ({
   const isMobile = useIsMobile();
 
   const handleBack = () => {
-    if (backPath) {
+    if (onBackClick) {
+      onBackClick();
+    } else if (backPath) {
       navigate(backPath);
     } else {
       // Smart back navigation

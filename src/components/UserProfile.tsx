@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmationDialog } from '@/components/ConfirmationDialog'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { User, LogOut, Settings, Trophy, Edit3, Save, X } from 'lucide-react'
@@ -19,11 +20,27 @@ export function UserProfile() {
   const [newUsername, setNewUsername] = useState('')
   const [userStats, setUserStats] = useState({ gamesPlayed: 0, gamesWon: 0, totalScore: 0 })
   const [loading, setLoading] = useState(false)
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
 
   if (!user) return null
 
   const handleSignOut = async () => {
-    await signOut()
+    setSigningOut(true)
+    try {
+      await signOut()
+      toast.success('Signed out successfully')
+    } catch (error) {
+      console.error('Sign out error:', error)
+      toast.error('Failed to sign out')
+    } finally {
+      setSigningOut(false)
+      setShowSignOutDialog(false)
+    }
+  }
+
+  const handleSignOutClick = () => {
+    setShowSignOutDialog(true)
   }
 
   const getInitials = (email: string) => {
@@ -107,7 +124,7 @@ export function UserProfile() {
             <span>Profile & Settings</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleSignOut}>
+          <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleSignOutClick}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Sign Out</span>
           </DropdownMenuItem>
@@ -267,7 +284,7 @@ export function UserProfile() {
             </Button>
             <Button
               variant="destructive"
-              onClick={handleSignOut}
+              onClick={handleSignOutClick}
               className="flex-1"
             >
               <LogOut className="w-4 h-4 mr-2" />
@@ -277,6 +294,20 @@ export function UserProfile() {
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Sign Out Confirmation Dialog */}
+    <ConfirmationDialog
+      isOpen={showSignOutDialog}
+      onClose={() => setShowSignOutDialog(false)}
+      onConfirm={handleSignOut}
+      title="Sign Out"
+      description="Are you sure you want to sign out? You'll need to sign in again to access your games and statistics."
+      confirmText="Sign Out"
+      cancelText="Cancel"
+      variant="destructive"
+      icon="logout"
+      loading={signingOut}
+    />
     </>
   )
 }

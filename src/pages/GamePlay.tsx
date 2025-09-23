@@ -11,6 +11,7 @@ import { PlayerScoreCard } from "@/components/PlayerScoreCard";
 import { ScoreReference } from "@/components/ScoreReference";
 import { CardSelector } from "@/components/CardSelector";
 import { StandardPageLayout } from "@/components/StandardPageLayout";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   ArrowLeft, 
@@ -40,6 +41,7 @@ export default function GamePlay() {
   const [winnerId, setWinnerId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useCardInput, setUseCardInput] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
 
   useEffect(() => {
     if (!gameId) return;
@@ -60,12 +62,20 @@ export default function GamePlay() {
     }
   }, [gameId, navigate]);
 
+  const handleExitGame = () => {
+    navigate('/');
+  };
+
+  const handleBackClick = () => {
+    setShowExitDialog(true);
+  };
+
   const submitRound = async () => {
     if (!game || !winnerId) return;
 
     setIsSubmitting(true);
     try {
-      const newRound: GameRound = {
+    const newRound: GameRound = {
         id: Date.now().toString(),
         roundNumber: game.currentRound + 1,
         winnerId,
@@ -74,7 +84,7 @@ export default function GamePlay() {
 
       // Calculate scores for all players
       game.players.forEach(player => {
-        if (player.id === winnerId) {
+      if (player.id === winnerId) {
           newRound.scores[player.id] = 0; // Winner gets 0 points
         } else {
           const scoreValue = useCardInput 
@@ -97,8 +107,8 @@ export default function GamePlay() {
           const isLuckyBonanza = newScore === game.scoreLimit;
           const finalScore = isLuckyBonanza ? 0 : newScore;
           
-          return {
-            ...player,
+        return {
+          ...player,
             score: finalScore,
             isEliminated: finalScore > game.scoreLimit && !isLuckyBonanza,
             luckerBonanzaUsed: isLuckyBonanza ? true : player.luckerBonanzaUsed
@@ -122,9 +132,9 @@ export default function GamePlay() {
       }
 
       setGame(updatedGame);
-      setRoundScores({});
-      setPlayerCards({});
-      setWinnerId('');
+    setRoundScores({});
+    setPlayerCards({});
+    setWinnerId('');
       
       if (updatedGame.winner) {
         toast.success(`${updatedGame.winner.name} wins the game!`);
@@ -135,7 +145,7 @@ export default function GamePlay() {
       console.error('Error submitting round:', error);
       toast.error('Failed to submit round');
     } finally {
-      setIsSubmitting(false);
+    setIsSubmitting(false);
     }
   };
 
@@ -167,7 +177,7 @@ export default function GamePlay() {
     <StandardPageLayout
       title={`Game #${game.id.slice(0, 6)}`}
       showBackButton={true}
-      backPath="/"
+      onBackClick={handleBackClick}
       showHelp={true}
       showProfile={true}
       showGameInvitations={true}
@@ -179,30 +189,30 @@ export default function GamePlay() {
           <p className={`${isMobile ? 'text-sm' : 'text-base'} text-white/80`}>
             {game.players.length} Players • Score Limit: {game.scoreLimit}
           </p>
-        </div>
+            </div>
 
         {/* Game Stats */}
         <div className={`${isMobile ? 'mb-4' : 'mb-6'} flex flex-wrap gap-4 text-sm text-white/70 justify-center`}>
-          <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1">
             <Clock className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
-            Round {game.currentRound + 1}
-          </div>
-          <div className="flex items-center gap-1">
+                Round {game.currentRound + 1}
+              </div>
+              <div className="flex items-center gap-1">
             <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
-            {activePlayers.length} active players
-          </div>
-          <div className="flex items-center gap-1">
+                {activePlayers.length} active players
+              </div>
+              <div className="flex items-center gap-1">
             <Target className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
-            Limit: {game.scoreLimit}
-          </div>
-        </div>
-          
-        {game.winner && (
+                Limit: {game.scoreLimit}
+              </div>
+            </div>
+            
+            {game.winner && (
           <div className="text-center">
-            <Badge className="bg-gradient-gold text-navy-deep text-lg px-4 py-2">
-              <Trophy className="w-5 h-5 mr-2" />
-              {game.winner.name} Wins!
-            </Badge>
+              <Badge className="bg-gradient-gold text-navy-deep text-lg px-4 py-2">
+                <Trophy className="w-5 h-5 mr-2" />
+                {game.winner.name} Wins!
+              </Badge>
           </div>
         )}
 
@@ -245,97 +255,110 @@ export default function GamePlay() {
                   {useCardInput ? "Select cards for each player" : "Enter manual scores"}
                 </div>
 
-                {/* Winner Selection */}
-                <div className="mb-4">
+                  {/* Winner Selection */}
+                  <div className="mb-4">
                   <Label className={`${isMobile ? 'text-sm' : 'text-base'} font-medium mb-2 block text-white`}>Round Winner</Label>
                   <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
-                    {activePlayers.map(player => (
-                      <Button
-                        key={player.id}
-                        variant={winnerId === player.id ? "casino" : "outline"}
+                      {activePlayers.map(player => (
+                        <Button
+                          key={player.id}
+                          variant={winnerId === player.id ? "casino" : "outline"}
                         size={isMobile ? "sm" : "default"}
-                        onClick={() => setWinnerId(player.id)}
+                          onClick={() => setWinnerId(player.id)}
                         className={winnerId === player.id ? 'bg-gold text-black' : 'ios-button text-white border-white/30'}
-                      >
+                        >
                         <Trophy className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-2`} />
-                        {player.name}
-                      </Button>
-                    ))}
+                          {player.name}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Score/Card Inputs */}
-                <div className="space-y-4 mb-6">
-                  {activePlayers.map(player => (
-                    <div key={player.id}>
-                      {useCardInput ? (
-                        <CardSelector
-                          playerName={player.name}
-                          selectedCards={playerCards[player.id] || []}
-                          onCardsChange={(cards) => {
-                            setPlayerCards(prev => ({
-                              ...prev,
-                              [player.id]: cards
-                            }));
-                          }}
-                          disabled={winnerId === player.id}
-                        />
-                      ) : (
-                        <>
-                          <Label className="text-sm mb-1 block">
-                            {player.name} 
-                            {winnerId === player.id && (
-                              <Badge variant="outline" className="ml-2 text-xs">Winner - 0 pts</Badge>
-                            )}
-                          </Label>
-                          <Input
-                            type="number"
-                            placeholder="Card points"
-                            value={winnerId === player.id ? '0' : roundScores[player.id] || ''}
-                            onChange={(e) => {
-                              if (winnerId !== player.id) {
-                                setRoundScores(prev => ({
-                                  ...prev,
-                                  [player.id]: e.target.value
-                                }));
-                              }
+                  {/* Score/Card Inputs */}
+                  <div className="space-y-4 mb-6">
+                    {activePlayers.map(player => (
+                      <div key={player.id}>
+                        {useCardInput ? (
+                          <CardSelector
+                            playerName={player.name}
+                            selectedCards={playerCards[player.id] || []}
+                            onCardsChange={(cards) => {
+                              setPlayerCards(prev => ({
+                                ...prev,
+                                [player.id]: cards
+                              }));
                             }}
                             disabled={winnerId === player.id}
-                            min="0"
-                            className="bg-muted/50"
                           />
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                        ) : (
+                          <>
+                            <Label className="text-sm mb-1 block">
+                              {player.name} 
+                              {winnerId === player.id && (
+                                <Badge variant="outline" className="ml-2 text-xs">Winner - 0 pts</Badge>
+                              )}
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder="Card points"
+                              value={winnerId === player.id ? '0' : roundScores[player.id] || ''}
+                              onChange={(e) => {
+                                if (winnerId !== player.id) {
+                                  setRoundScores(prev => ({
+                                    ...prev,
+                                    [player.id]: e.target.value
+                                  }));
+                                }
+                              }}
+                              disabled={winnerId === player.id}
+                              min="0"
+                              className="bg-muted/50"
+                            />
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-2">
-                  <Button
-                    onClick={submitRound}
-                    disabled={!winnerId || isSubmitting}
-                    variant="casino"
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    <Button
+                      onClick={submitRound}
+                      disabled={!winnerId || isSubmitting}
+                      variant="casino"
                     className="w-full bg-gold hover:bg-gold-dark text-black font-semibold"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {isSubmitting ? "Submitting..." : "Submit Round"}
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={resetRound}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {isSubmitting ? "Submitting..." : "Submit Round"}
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={resetRound}
                     className="w-full ios-button text-white border-white/30"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Reset Form
-                  </Button>
-                </div>
-              </Card>
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Reset Form
+                    </Button>
+                  </div>
+                </Card>
             </div>
           )}
         </div>
       </div>
+
+      {/* Exit Game Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showExitDialog}
+        onClose={() => setShowExitDialog(false)}
+        onConfirm={handleExitGame}
+        title="Exit Game"
+        description="Are you sure you want to exit this game? Your progress will be saved but you'll need to rejoin to continue playing."
+        confirmText="Exit Game"
+        cancelText="Continue Playing"
+        variant="warning"
+        icon="back"
+      />
     </StandardPageLayout>
   );
 }

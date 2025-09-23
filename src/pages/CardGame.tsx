@@ -7,6 +7,7 @@ import { PlayingCard } from "@/components/PlayingCard";
 import { QuestionAnswerDialog } from "@/components/QuestionAnswerDialog";
 import { JokerTargetDialog } from "@/components/JokerTargetDialog";
 import { StandardPageLayout } from "@/components/StandardPageLayout";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useCardGame } from "@/hooks/useCardGame";
 import { useCardSelection } from "@/hooks/useCardSelection";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -44,6 +45,7 @@ export default function CardGame({
   const [game, setGame] = useState<Game | null>(null);
   const [jokerBeingPlayed, setJokerBeingPlayed] = useState<GameCard | null>(null);
   const [aceBeingPlayed, setAceBeingPlayed] = useState<GameCard | null>(null);
+  const [showExitDialog, setShowExitDialog] = useState(false);
   const isMobile = useIsMobile();
 
   const activePlayers = isOnlineGame ? onlinePlayers : (game?.players.filter(p => !p.isEliminated) || []);
@@ -206,6 +208,20 @@ export default function CardGame({
     cardGame.drawForQuestionAnswer(currentPlayer.id);
   };
 
+  const handleExitGame = () => {
+    if (isOnlineGame) {
+      // For online games, navigate back to the game lobby
+      navigate(`/online-game/${gameId}`);
+    } else {
+      // For offline games, navigate to home
+      navigate('/');
+    }
+  };
+
+  const handleBackClick = () => {
+    setShowExitDialog(true);
+  };
+
   // Check if current player needs to answer a question
   const needsToAnswer = cardGame.gameState?.waitingForAnswer === activePlayers[0]?.id;
   const currentPlayerHand = cardGame.gameState?.players.find(p => p.id === activePlayers[0]?.id)?.hand || [];
@@ -223,7 +239,7 @@ export default function CardGame({
         useHomepageBackground={true}
       >
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
+        <div className="text-center">
             <div className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} animate-spin border-2 border-gold border-t-transparent rounded-full mx-auto mb-4`} />
             <p className={`${isMobile ? 'text-sm' : 'text-base'} text-white/70`}>Loading game...</p>
           </div>
@@ -236,7 +252,7 @@ export default function CardGame({
     <StandardPageLayout
       title="Binzingo Cardy - Live Game"
       showBackButton={true}
-      backPath={`/game/${gameId}`}
+      onBackClick={handleBackClick}
       showHelp={true}
       showProfile={true}
       showGameInvitations={true}
@@ -699,6 +715,22 @@ export default function CardGame({
               onCancel={() => setAceBeingPlayed(null)}
             />
           )}
+
+          {/* Exit Game Confirmation Dialog */}
+          <ConfirmationDialog
+            isOpen={showExitDialog}
+            onClose={() => setShowExitDialog(false)}
+            onConfirm={handleExitGame}
+            title="Exit Game"
+            description={isOnlineGame 
+              ? "Are you sure you want to leave this game? You'll return to the game lobby and can rejoin later."
+              : "Are you sure you want to exit this game? Your progress will be saved but you'll need to rejoin to continue playing."
+            }
+            confirmText="Exit Game"
+            cancelText="Continue Playing"
+            variant="warning"
+            icon="back"
+          />
        </div>
      </StandardPageLayout>
    );

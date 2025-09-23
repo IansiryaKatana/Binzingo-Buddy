@@ -8,6 +8,7 @@ interface StandardPageLayoutProps {
   title?: string;
   showBackButton?: boolean;
   backPath?: string;
+  onBackClick?: () => void;
   showHelp?: boolean;
   showProfile?: boolean;
   showGameInvitations?: boolean;
@@ -20,6 +21,7 @@ export const StandardPageLayout = ({
   title,
   showBackButton = true,
   backPath,
+  onBackClick,
   showHelp = true,
   showProfile = true,
   showGameInvitations = true,
@@ -47,6 +49,7 @@ export const StandardPageLayout = ({
         title={title}
         showBackButton={showBackButton}
         backPath={backPath}
+        onBackClick={onBackClick}
         showHelp={showHelp}
         showProfile={showProfile}
         showGameInvitations={showGameInvitations}
