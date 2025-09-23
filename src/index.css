@@ -193,6 +193,52 @@ All colors MUST be HSL.
   .card-draw-animation {
     animation: cardDraw 0.6s ease-out forwards;
   }
+
+  /* Mobile-first responsive utilities */
+  .mobile-padding {
+    @apply px-3.5 py-4;
+  }
+  
+  .mobile-text-xs {
+    @apply text-xs leading-4;
+  }
+  
+  .mobile-text-sm {
+    @apply text-sm leading-5;
+  }
+  
+  .mobile-text-base {
+    @apply text-base leading-6;
+  }
+  
+  .mobile-text-lg {
+    @apply text-lg leading-7;
+  }
+  
+  .mobile-text-xl {
+    @apply text-xl leading-7;
+  }
+  
+  .mobile-text-2xl {
+    @apply text-2xl leading-8;
+  }
+  
+  .mobile-text-3xl {
+    @apply text-3xl leading-9;
+  }
+  
+  /* iOS-like mobile styling */
+  .ios-card {
+    @apply bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg;
+  }
+  
+  .ios-button {
+    @apply bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl shadow-lg hover:bg-white/30 transition-all duration-200;
+  }
+  
+  .ios-input {
+    @apply bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl shadow-inner focus:bg-white/20 focus:border-white/40 transition-all duration-200;
+  }
 }
 
 @keyframes winner-glow {
