@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { PlayerScoreCard } from "@/components/PlayerScoreCard";
 import { ScoreReference } from "@/components/ScoreReference";
 import { CardSelector } from "@/components/CardSelector";
-import { TopNavigation } from "@/components/TopNavigation";
-import { UserProfile } from "@/components/UserProfile";
+import { StandardPageLayout } from "@/components/StandardPageLayout";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   ArrowLeft, 
   Plus, 
@@ -32,6 +32,7 @@ import { toast } from "sonner";
 export default function GamePlay() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const [game, setGame] = useState<Game | null>(null);
   const [roundScores, setRoundScores] = useState<Record<string, string>>({});
@@ -216,64 +217,38 @@ export default function GamePlay() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-4 md:p-6">
-      <div className="container mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-6">
-          {/* Top Navigation Bar */}
-          <div className="flex items-center justify-between mb-4">
-            {/* Left - Home Button */}
-            <Button
-              variant="outline"
-              onClick={() => navigate('/')}
-              size="sm"
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Home
-            </Button>
+    <StandardPageLayout
+      title={`Game #${game.id.slice(0, 6)}`}
+      showBackButton={true}
+      backPath="/"
+      showHelp={true}
+      showProfile={true}
+      showGameInvitations={true}
+      useHomepageBackground={true}
+    >
+      <div className="max-w-6xl mx-auto">
+        {/* Game Info */}
+        <div className={`${isMobile ? 'mb-4' : 'mb-6'} text-center`}>
+          <p className={`${isMobile ? 'text-sm' : 'text-base'} text-white/80`}>
+            {game.players.length} Players • Score Limit: {game.scoreLimit}
+          </p>
+        </div>
 
-            {/* Center - Game Title */}
-            <div className="text-center">
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                Game #{game.id.slice(0, 6)}
-              </h1>
+          {/* Game Stats */}
+          <div className={`${isMobile ? 'mb-4' : 'mb-6'} flex flex-wrap gap-4 text-sm text-white/70 justify-center`}>
+            <div className="flex items-center gap-1">
+              <Clock className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+              Round {game.currentRound + 1}
             </div>
-
-            {/* Right - Action Buttons */}
-            <div className="flex items-center gap-2">
-              {/* Scoring Rules Dialog */}
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <HelpCircle className="w-4 h-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <ScoreReference />
-                </DialogContent>
-              </Dialog>
-              
-              {/* Profile Management */}
-              <UserProfile />
+            <div className="flex items-center gap-1">
+              <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+              {activePlayers.length} active players
+            </div>
+            <div className="flex items-center gap-1">
+              <Target className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+              Limit: {game.scoreLimit}
             </div>
           </div>
-
-          {/* Game Info */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                Round {game.currentRound + 1}
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                {activePlayers.length} active players
-              </div>
-              <div className="flex items-center gap-1">
-                <Target className="w-4 h-4" />
-                Limit: {game.scoreLimit}
-              </div>
-            </div>
             
             {game.winner && (
               <Badge className="bg-gradient-gold text-navy-deep text-lg px-4 py-2">
@@ -287,8 +262,8 @@ export default function GamePlay() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Player Scores */}
           <div className="lg:col-span-2">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Player Scores</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-white mb-4`}>Player Scores</h2>
+            <div className={`grid ${isMobile ? 'grid-cols-1' : 'sm:grid-cols-2'} gap-4`}>
               {sortedPlayers.map((player, index) => (
                 <PlayerScoreCard
                   key={player.id}
@@ -304,37 +279,38 @@ export default function GamePlay() {
           {/* Game Input Section */}
           {!game.winner && activePlayers.length > 0 && (
             <div className="space-y-4">
-              <Card className="p-6 bg-gradient-card border-border shadow-card sticky top-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-foreground">
+              <Card className={`${isMobile ? 'p-4' : 'p-6'} ios-card sticky top-6`}>
+                <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center justify-between'} mb-4`}>
+                  <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold text-white`}>
                     Round {game.currentRound + 1} Scores
                   </h3>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calculator className="w-4 h-4" />
+                  <div className={`flex items-center gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                    <Calculator className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                     <Switch
                       checked={useCardInput}
                       onCheckedChange={setUseCardInput}
                     />
-                    <CreditCard className="w-4 h-4" />
+                    <CreditCard className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                   </div>
                 </div>
                 
-                <div className="mb-4 text-xs text-muted-foreground text-center">
+                <div className={`mb-4 ${isMobile ? 'text-xs' : 'text-sm'} text-white/70 text-center`}>
                   {useCardInput ? "Select cards for each player" : "Enter manual scores"}
                 </div>
 
                   {/* Winner Selection */}
                   <div className="mb-4">
-                    <Label className="text-sm font-medium mb-2 block">Round Winner</Label>
-                    <div className="grid gap-2">
+                    <Label className={`${isMobile ? 'text-sm' : 'text-base'} font-medium mb-2 block text-white`}>Round Winner</Label>
+                    <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
                       {activePlayers.map(player => (
                         <Button
                           key={player.id}
                           variant={winnerId === player.id ? "casino" : "outline"}
-                          size="sm"
+                          size={isMobile ? "sm" : "default"}
                           onClick={() => setWinnerId(player.id)}
+                          className={winnerId === player.id ? 'bg-gold text-black' : 'ios-button text-white border-white/30'}
                         >
-                          <Trophy className="w-4 h-4 mr-2" />
+                          <Trophy className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-2`} />
                           {player.name}
                         </Button>
                       ))}
@@ -393,18 +369,18 @@ export default function GamePlay() {
                       onClick={submitRound}
                       disabled={!winnerId || isSubmitting}
                       variant="casino"
-                      className="w-full"
+                      className={`w-full ${isMobile ? 'text-base py-3' : 'text-lg py-4'} bg-gold hover:bg-gold-dark text-black font-semibold`}
                     >
-                      <Save className="w-4 h-4 mr-2" />
+                      <Save className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-2`} />
                       {isSubmitting ? "Submitting..." : "Submit Round"}
                     </Button>
                     
                     <Button
                       variant="outline"
                       onClick={resetRound}
-                      className="w-full"
+                      className={`w-full ios-button text-white border-white/30`}
                     >
-                      <RotateCcw className="w-4 h-4 mr-2" />
+                      <RotateCcw className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-2`} />
                       Reset Form
                     </Button>
                   </div>
@@ -413,6 +389,6 @@ export default function GamePlay() {
           )}
         </div>
       </div>
-    </div>
+    </StandardPageLayout>
   );
 }

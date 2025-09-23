@@ -6,14 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { PlayingCard } from "@/components/PlayingCard";
 import { QuestionAnswerDialog } from "@/components/QuestionAnswerDialog";
 import { JokerTargetDialog } from "@/components/JokerTargetDialog";
+import { StandardPageLayout } from "@/components/StandardPageLayout";
 import { useCardGame } from "@/hooks/useCardGame";
 import { useCardSelection } from "@/hooks/useCardSelection";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Game } from "@/types/game";
 import { Card as GameCard } from "@/types/cards";
 import { cn } from "@/lib/utils";
 import { canDeclareDanger } from "@/utils/cardGame";
 import { 
-  ArrowLeft, 
   RotateCcw, 
   Crown, 
   AlertTriangle,
@@ -43,6 +44,7 @@ export default function CardGame({
   const [game, setGame] = useState<Game | null>(null);
   const [jokerBeingPlayed, setJokerBeingPlayed] = useState<GameCard | null>(null);
   const [aceBeingPlayed, setAceBeingPlayed] = useState<GameCard | null>(null);
+  const isMobile = useIsMobile();
 
   const activePlayers = isOnlineGame ? onlinePlayers : (game?.players.filter(p => !p.isEliminated) || []);
   const cardGame = useCardGame(activePlayers);
@@ -211,82 +213,95 @@ export default function CardGame({
 
   if (!game) {
     return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-gold border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading game...</p>
+      <StandardPageLayout
+        title="Loading Game..."
+        showBackButton={true}
+        backPath="/"
+        showHelp={false}
+        showProfile={true}
+        showGameInvitations={false}
+        useHomepageBackground={true}
+      >
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} animate-spin border-2 border-gold border-t-transparent rounded-full mx-auto mb-4`} />
+            <p className={`${isMobile ? 'text-sm' : 'text-base'} text-white/70`}>Loading game...</p>
+          </div>
         </div>
-      </div>
+      </StandardPageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      {/* Header */}
-      <div className="bg-gradient-card backdrop-blur-sm border-b border-border shadow-card">
-        <div className="container mx-auto max-w-[1600px] p-4">
-          <div className="flex items-center justify-between">
+    <StandardPageLayout
+      title="Binzingo Cardy - Live Game"
+      showBackButton={true}
+      backPath={`/game/${gameId}`}
+      showHelp={true}
+      showProfile={true}
+      showGameInvitations={true}
+      useHomepageBackground={true}
+    >
+      {/* Game Info Header */}
+      <div className={`${isMobile ? 'mb-4' : 'mb-6'} ios-card`}>
+        <div className={`${isMobile ? 'p-3' : 'p-4'}`}>
+          <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center justify-between'}`}>
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">
+                <h1 className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-white`}>
                   Binzingo Cardy - Live Game
                 </h1>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center gap-4'} ${isMobile ? 'text-xs' : 'text-sm'} text-white/70`}>
                   <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
+                    <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                     {activePlayers.length} players
                   </div>
                   <div className="flex items-center gap-1">
-                    <Target className="w-4 h-4" />
+                    <Target className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                     Limit: {game.scoreLimit}
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center gap-2'}`}>
               {cardGame.gameState && (
                 <Button
                   variant="outline"
+                  size={isMobile ? "sm" : "default"}
                   onClick={cardGame.resetGame}
+                  className="ios-button text-white border-white/30"
                 >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset Game
+                  <RotateCcw className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-2`} />
+                  {!isMobile && 'Reset Game'}
                 </Button>
               )}
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/game/${gameId}`)}
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Scoring
-              </Button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Game Area */}
-      <div className="container mx-auto max-w-[1600px] p-4">
+      <div className="max-w-[1600px] mx-auto">
         {!cardGame.isGameActive ? (
           /* Game Setup */
-          <div className="flex items-center justify-center min-h-[600px]">
-            <Card className="p-8 bg-gradient-card border-border shadow-card text-center max-w-lg">
-              <div className="mb-6">
-                <div className="w-20 h-20 bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shuffle className="w-10 h-10 text-navy-deep" />
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Card className={`${isMobile ? 'p-4' : 'p-8'} ios-card text-center max-w-lg`}>
+              <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
+                <div className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-gradient-gold rounded-full flex items-center justify-center mx-auto mb-4`}>
+                  <Shuffle className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} text-navy-deep`} />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Ready to Play?</h2>
-                <p className="text-muted-foreground">
+                <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-white mb-2`}>Ready to Play?</h2>
+                <p className={`${isMobile ? 'text-sm' : 'text-base'} text-white/70`}>
                   Start a live Binzingo Cardy game with {activePlayers.length} players
                 </p>
               </div>
               
-              <div className="space-y-3 mb-6">
+              <div className={`space-y-3 ${isMobile ? 'mb-4' : 'mb-6'}`}>
                 {activePlayers.map((player) => (
-                  <div key={player.id} className="flex items-center justify-between bg-muted/20 rounded-lg p-3">
-                    <span className="text-foreground font-medium">{player.name}</span>
-                    <Badge variant="outline" className="border-border">
+                  <div key={player.id} className={`flex items-center justify-between bg-white/10 rounded-lg ${isMobile ? 'p-2' : 'p-3'}`}>
+                    <span className={`${isMobile ? 'text-sm' : 'text-base'} text-white font-medium`}>{player.name}</span>
+                    <Badge variant="outline" className={`${isMobile ? 'text-xs px-2 py-1' : 'text-sm'} border-white/30 text-white/80`}>
                       {player.score} pts
                     </Badge>
                   </div>
@@ -297,30 +312,30 @@ export default function CardGame({
                 <Button 
                   onClick={() => handleStartGame(false)}
                   variant="casino" 
-                  className="w-full text-lg py-3"
+                  className={`w-full ${isMobile ? 'text-base py-3' : 'text-lg py-3'} bg-gold hover:bg-gold-dark text-black font-semibold rounded-xl shadow-lg`}
                   disabled={activePlayers.length < 2}
                 >
-                  <Shuffle className="w-5 h-5 mr-2" />
+                  <Shuffle className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-2`} />
                   Start Multiplayer Game
                 </Button>
                 
                 <Button 
                   onClick={() => handleStartGame(true)}
                   variant="outline"
-                  className="w-full text-lg py-3"
+                  className={`w-full ${isMobile ? 'text-base py-3' : 'text-lg py-3'} ios-button text-white border-white/30`}
                 >
-                  <Users className="w-5 h-5 mr-2" />
+                  <Users className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} mr-2`} />
                   {activePlayers.length === 1 ? 'Play vs 1 Bot' : 'Play vs Computer Bots'}
                 </Button>
               </div>
               
               {activePlayers.length === 1 && (
-                <p className="text-muted-foreground text-sm mt-3">
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-white/70 mt-3`}>
                   Perfect for practicing! Play one-on-one against an AI opponent.
                 </p>
               )}
               {activePlayers.length > 1 && activePlayers.length < 4 && (
-                <p className="text-muted-foreground text-sm mt-3">
+                <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-white/70 mt-3`}>
                   Add computer bots to fill remaining player slots (up to 4 total players)
                 </p>
               )}
@@ -328,65 +343,65 @@ export default function CardGame({
           </div>
         ) : (
           /* Game Board - Solitaire Style Layout */
-          <div className="space-y-6">
+          <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
             {/* Game Status Bar */}
-            <div className="bg-gradient-card rounded-lg p-4 backdrop-blur-sm border border-border shadow-card">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
+            <div className={`${isMobile ? 'p-3' : 'p-4'} ios-card`}>
+              <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center justify-between'}`}>
+                <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center gap-6'}`}>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-foreground">
+                    <Clock className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-white/70`} />
+                    <span className={`${isMobile ? 'text-sm' : 'text-base'} text-white`}>
                       {cardGame.gameState?.players[cardGame.gameState.currentPlayerIndex]?.name}'s Turn
                     </span>
                     {cardGame.gameState?.direction === -1 && (
-                      <Badge variant="outline" className="border-border text-xs">
+                      <Badge variant="outline" className={`${isMobile ? 'text-xs px-2 py-1' : 'text-xs'} border-white/30 text-white/80`}>
                         Reversed
                       </Badge>
                     )}
                   </div>
                   
                   {cardGame.gameState?.pendingPunishment.type && (
-                    <Badge variant="destructive">
-                      <AlertTriangle className="w-3 h-3 mr-1" />
+                    <Badge variant="destructive" className={`${isMobile ? 'text-xs px-2 py-1' : 'text-sm'}`}>
+                      <AlertTriangle className={`${isMobile ? 'w-2 h-2' : 'w-3 h-3'} mr-1`} />
                       Draw {cardGame.gameState.pendingPunishment.amount} 
                       ({cardGame.gameState.pendingPunishment.type})
                     </Badge>
                   )}
                   
                   {cardGame.gameState?.activeCommand.type && (
-                    <Badge variant="secondary">
+                    <Badge variant="secondary" className={`${isMobile ? 'text-xs px-2 py-1' : 'text-sm'} bg-white/20 text-white border-white/30`}>
                       Command: {cardGame.gameState.activeCommand.type}
                     </Badge>
                   )}
                 </div>
                 
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <Target className="w-4 h-4" />
+                <div className={`flex items-center gap-2 text-white/70 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                  <Target className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                   {cardGame.gameState?.deck.length} cards left
                 </div>
               </div>
             </div>
 
             {/* Main Game Area - Three Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
+            <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 lg:grid-cols-7 gap-6'}`}>
               {/* Left - Draw Deck */}
-              <div className="lg:col-span-1">
-                <Card className="p-6 bg-gradient-card border-border shadow-card text-center h-fit">
-                  <h3 className="text-foreground font-semibold mb-4 text-sm">Draw Deck</h3>
+              <div className={`${isMobile ? 'order-2' : 'lg:col-span-1'}`}>
+                <Card className={`${isMobile ? 'p-3' : 'p-6'} ios-card text-center h-fit`}>
+                  <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} text-white font-semibold mb-4`}>Draw Deck</h3>
                   
                   <div className="text-center">
                     <div className="relative mb-4">
-                      <div className="w-24 h-36 bg-gradient-to-br from-blue-800 to-blue-900 border-2 border-blue-700 rounded-xl shadow-lg mx-auto relative overflow-hidden">
+                      <div className={`${isMobile ? 'w-16 h-24' : 'w-24 h-36'} bg-gradient-to-br from-blue-800 to-blue-900 border-2 border-blue-700 rounded-xl shadow-lg mx-auto relative overflow-hidden`}>
                         <div className="absolute inset-2 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg border border-blue-500">
                           <div className="absolute inset-0 flex items-center justify-center text-white/80">
-                            <Shuffle className="w-8 h-8" />
+                            <Shuffle className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
                           </div>
                         </div>
                       </div>
-                      <div className="absolute -top-1 -right-1 w-24 h-36 bg-gradient-to-br from-blue-700 to-blue-800 rounded-xl -z-10"></div>
-                      <div className="absolute -top-2 -right-2 w-24 h-36 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl -z-20"></div>
+                      <div className={`absolute -top-1 -right-1 ${isMobile ? 'w-16 h-24' : 'w-24 h-36'} bg-gradient-to-br from-blue-700 to-blue-800 rounded-xl -z-10`}></div>
+                      <div className={`absolute -top-2 -right-2 ${isMobile ? 'w-16 h-24' : 'w-24 h-36'} bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl -z-20`}></div>
                     </div>
-                    <Badge variant="outline" className="border-border text-xs">
+                    <Badge variant="outline" className={`${isMobile ? 'text-xs px-2 py-1' : 'text-xs'} border-white/30 text-white/80`}>
                       {cardGame.gameState?.deck.length} cards
                     </Badge>
                   </div>
@@ -394,11 +409,11 @@ export default function CardGame({
 
                 {/* Round End */}
                 {cardGame.gameState?.gamePhase === 'round-ended' && (
-                  <Card className="p-6 bg-gradient-gold border-gold text-center mt-4">
-                    <div className="mb-4">
-                      <Crown className="w-12 h-12 text-navy-deep mx-auto mb-2" />
-                      <h3 className="text-navy-deep font-bold text-lg">Round Complete!</h3>
-                      <p className="text-navy-deep/80">
+                  <Card className={`${isMobile ? 'p-3' : 'p-6'} bg-gradient-gold border-gold text-center mt-4`}>
+                    <div className={`${isMobile ? 'mb-3' : 'mb-4'}`}>
+                      <Crown className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} text-navy-deep mx-auto mb-2`} />
+                      <h3 className={`${isMobile ? 'text-base' : 'text-lg'} text-navy-deep font-bold`}>Round Complete!</h3>
+                      <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-navy-deep/80`}>
                         {cardGame.gameState.players.find(p => p.id === cardGame.gameState.roundWinner)?.name} wins!
                       </p>
                     </div>
@@ -406,7 +421,7 @@ export default function CardGame({
                     <Button 
                       onClick={handleFinishRound}
                       variant="secondary"
-                      className="w-full"
+                      className={`w-full ${isMobile ? 'text-sm py-2' : 'text-base py-3'} bg-white/20 text-navy-deep border-white/30`}
                     >
                       Return to Scoring
                     </Button>
@@ -415,34 +430,34 @@ export default function CardGame({
               </div>
 
               {/* Center - Players Area */}
-              <div className="lg:col-span-4 space-y-4">
+              <div className={`${isMobile ? 'order-1' : 'lg:col-span-4'} ${isMobile ? 'space-y-3' : 'space-y-4'}`}>
                 {/* Other Players */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
                   {cardGame.gameState?.players.filter(p => p.id !== activePlayers[0]?.id).map((player) => {
                     const isBot = cardGame.botPlayers?.includes(player.id);
                     const isCurrentPlayer = cardGame.gameState?.players[cardGame.gameState.currentPlayerIndex]?.id === player.id;
                     
                     return (
                       <Card key={player.id} className={cn(
-                        "p-4 backdrop-blur-sm border-border transition-all duration-300 shadow-card",
-                        isCurrentPlayer ? "bg-gold/20 border-gold/40 shadow-gold" : "bg-gradient-card"
+                        `${isMobile ? 'p-3' : 'p-4'} backdrop-blur-sm border-border transition-all duration-300 shadow-card`,
+                        isCurrentPlayer ? "bg-gold/20 border-gold/40 shadow-gold" : "ios-card"
                       )}>
-                        <div className="flex items-center justify-between mb-3">
+                        <div className={`flex items-center justify-between ${isMobile ? 'mb-2' : 'mb-3'}`}>
                           <div className="flex items-center gap-2">
-                            <span className="text-foreground font-medium flex items-center gap-1">
+                            <span className={`${isMobile ? 'text-sm' : 'text-base'} text-white font-medium flex items-center gap-1`}>
                               {player.name}
-                              {isBot && <span className="text-xs text-gold">(Bot)</span>}
+                              {isBot && <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-gold`}>(Bot)</span>}
                             </span>
                             {isCurrentPlayer && (
-                              <Crown className="w-4 h-4 text-gold animate-pulse" />
+                              <Crown className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-gold animate-pulse`} />
                             )}
                             {player.hasDeclaredDanger && (
-                              <Badge variant="destructive" className="text-xs animate-pulse">
+                              <Badge variant="destructive" className={`${isMobile ? 'text-xs px-1 py-0.5' : 'text-xs'} animate-pulse`}>
                                 DANGER!
                               </Badge>
                             )}
                           </div>
-                          <Badge variant="outline" className="border-border">
+                          <Badge variant="outline" className={`${isMobile ? 'text-xs px-2 py-1' : 'text-sm'} border-white/30 text-white/80`}>
                             {player.hand.length} cards
                           </Badge>
                         </div>
@@ -452,18 +467,18 @@ export default function CardGame({
                           {player.hand.slice(0, Math.min(8, player.hand.length)).map((_, index) => (
                             <div
                               key={index}
-                              className="w-10 h-14 bg-gradient-to-br from-blue-800 to-blue-900 border border-blue-700 rounded-lg shadow-lg relative overflow-hidden"
+                              className={`${isMobile ? 'w-6 h-8' : 'w-10 h-14'} bg-gradient-to-br from-blue-800 to-blue-900 border border-blue-700 rounded-lg shadow-lg relative overflow-hidden`}
                               style={{ transform: `rotate(${(index - player.hand.length/2) * 3}deg)` }}
                             >
                               <div className="absolute inset-1 bg-gradient-to-br from-blue-600 to-blue-800 rounded border border-blue-500">
                                 <div className="absolute inset-2 flex items-center justify-center">
-                                  <div className="w-4 h-4 bg-white/20 rounded-full"></div>
+                                  <div className={`${isMobile ? 'w-2 h-2' : 'w-4 h-4'} bg-white/20 rounded-full`}></div>
                                 </div>
                               </div>
                             </div>
                           ))}
                           {player.hand.length > 8 && (
-                            <div className="self-end ml-2 text-white/60 text-xs font-medium">
+                            <div className={`self-end ml-2 text-white/60 ${isMobile ? 'text-xs' : 'text-xs'} font-medium`}>
                               +{player.hand.length - 8}
                             </div>
                           )}
@@ -685,6 +700,6 @@ export default function CardGame({
             />
           )}
        </div>
-     </div>
+     </StandardPageLayout>
    );
  }
