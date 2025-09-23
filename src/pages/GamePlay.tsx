@@ -50,151 +50,98 @@ export default function GamePlay() {
       const foundGame = games.find(g => g.id === gameId);
       if (foundGame) {
         setGame(foundGame);
-        // Initialize round scores and cards
-        const initialScores: Record<string, string> = {};
-        const initialCards: Record<string, string[]> = {};
-        foundGame.players
-          .filter(p => !p.isEliminated)
-          .forEach(p => {
-            initialScores[p.id] = '';
-            initialCards[p.id] = [];
-          });
-        setRoundScores(initialScores);
-        setPlayerCards(initialCards);
       } else {
-        toast.error("Game not found");
+        toast.error('Game not found');
         navigate('/');
       }
+    } else {
+      toast.error('No saved games found');
+      navigate('/');
     }
   }, [gameId, navigate]);
 
-  const updateGame = (updatedGame: Game) => {
-    const savedGames = localStorage.getItem('binzingo-games');
-    if (savedGames) {
-      const games: Game[] = JSON.parse(savedGames);
-      const gameIndex = games.findIndex(g => g.id === updatedGame.id);
-      if (gameIndex !== -1) {
-        games[gameIndex] = updatedGame;
-        localStorage.setItem('binzingo-games', JSON.stringify(games));
-        setGame(updatedGame);
-      }
-    }
-  };
-
-  const submitRound = () => {
-    if (!game || !winnerId) {
-      toast.error("Please select a round winner");
-      return;
-    }
+  const submitRound = async () => {
+    if (!game || !winnerId) return;
 
     setIsSubmitting(true);
-
-    const activePlayers = game.players.filter(p => !p.isEliminated);
-    const roundNumber = game.currentRound + 1;
-
-    // Create new round
-    const newRound: GameRound = {
-      id: `round-${Date.now()}`,
-      roundNumber,
-      scores: {},
-      winner: winnerId,
-      timestamp: new Date(),
-    };
-
-    // Calculate scores for this round
-    activePlayers.forEach(player => {
-      if (player.id === winnerId) {
-        newRound.scores[player.id] = 0; // Winner scores 0
-      } else {
-        let roundScore: number;
-        if (useCardInput) {
-          // Calculate score from cards
-          roundScore = playerCards[player.id]?.reduce((sum, card) => sum + calculateCardValue(card), 0) || 0;
-        } else {
-          // Use manual score input
-          roundScore = parseInt(roundScores[player.id]) || 0;
-        }
-        newRound.scores[player.id] = roundScore;
-      }
-    });
-
-    // Update player total scores and check for eliminations/lucky bonanza
-    const updatedPlayers = game.players.map(player => {
-      if (player.isEliminated) return player;
-
-      const roundScore = newRound.scores[player.id] || 0;
-      const newTotalScore = player.score + roundScore;
-
-      // Check for exact score limit (Lucky Bonanza)
-      if (newTotalScore === game.scoreLimit && !player.luckerBonanzaUsed) {
-        toast.success(`🎉 ${player.name} hit Lucky Bonanza! Score reset to 0!`);
-        return {
-          ...player,
-          score: 0,
-          luckerBonanzaUsed: true,
-        };
-      }
-
-      // Check for elimination
-      if (newTotalScore >= game.scoreLimit) {
-        toast.error(`${player.name} eliminated at ${newTotalScore} points!`);
-        return {
-          ...player,
-          score: newTotalScore,
-          isEliminated: true,
-        };
-      }
-
-      return {
-        ...player,
-        score: newTotalScore,
+    try {
+      const newRound: GameRound = {
+        id: Date.now().toString(),
+        roundNumber: game.currentRound + 1,
+        winnerId,
+        scores: {}
       };
-    });
 
-    // Check for game end
-    const remainingPlayers = updatedPlayers.filter(p => !p.isEliminated);
-    const gameEnded = remainingPlayers.length <= 1;
+      // Calculate scores for all players
+      game.players.forEach(player => {
+        if (player.id === winnerId) {
+          newRound.scores[player.id] = 0; // Winner gets 0 points
+        } else {
+          const scoreValue = useCardInput 
+            ? calculateCardValue(playerCards[player.id] || [])
+            : parseInt(roundScores[player.id] || '0');
+          newRound.scores[player.id] = scoreValue;
+        }
+      });
 
-    const updatedGame: Game = {
-      ...game,
-      players: updatedPlayers,
-      currentRound: roundNumber,
-      rounds: [...game.rounds, newRound],
-      updatedAt: new Date(),
-      status: gameEnded ? 'finished' : 'active',
-      winner: gameEnded ? remainingPlayers[0] : undefined,
-    };
+      // Update game state
+      const updatedGame: Game = {
+        ...game,
+        currentRound: game.currentRound + 1,
+        rounds: [...game.rounds, newRound],
+        players: game.players.map(player => {
+          const roundScore = newRound.scores[player.id] || 0;
+          const newScore = player.score + roundScore;
+          
+          // Check for Lucky Bonanza (exact score limit)
+          const isLuckyBonanza = newScore === game.scoreLimit;
+          const finalScore = isLuckyBonanza ? 0 : newScore;
+          
+          return {
+            ...player,
+            score: finalScore,
+            isEliminated: finalScore > game.scoreLimit && !isLuckyBonanza,
+            luckerBonanzaUsed: isLuckyBonanza ? true : player.luckerBonanzaUsed
+          };
+        })
+      };
 
-    if (gameEnded && remainingPlayers.length === 1) {
-      toast.success(`🏆 ${remainingPlayers[0].name} wins the game!`);
-    }
+      // Check for winner
+      const activePlayers = updatedGame.players.filter(p => !p.isEliminated);
+      if (activePlayers.length === 1) {
+        updatedGame.winner = activePlayers[0];
+        updatedGame.status = 'completed';
+      }
 
-    updateGame(updatedGame);
+      // Save to localStorage
+      const savedGames = localStorage.getItem('binzingo-games');
+      if (savedGames) {
+        const games: Game[] = JSON.parse(savedGames);
+        const updatedGames = games.map(g => g.id === gameId ? updatedGame : g);
+        localStorage.setItem('binzingo-games', JSON.stringify(updatedGames));
+      }
 
-    // Reset form
-    setRoundScores({});
-    setPlayerCards({});
-    setWinnerId('');
-    setIsSubmitting(false);
-
-    if (gameEnded) {
-      setTimeout(() => {
-        navigate('/');
-      }, 3000);
+      setGame(updatedGame);
+      setRoundScores({});
+      setPlayerCards({});
+      setWinnerId('');
+      
+      if (updatedGame.winner) {
+        toast.success(`${updatedGame.winner.name} wins the game!`);
+      } else {
+        toast.success('Round submitted successfully!');
+      }
+    } catch (error) {
+      console.error('Error submitting round:', error);
+      toast.error('Failed to submit round');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const resetRound = () => {
-    const initialScores: Record<string, string> = {};
-    const initialCards: Record<string, string[]> = {};
-    game?.players
-      .filter(p => !p.isEliminated)
-      .forEach(p => {
-        initialScores[p.id] = '';
-        initialCards[p.id] = [];
-      });
-    setRoundScores(initialScores);
-    setPlayerCards(initialCards);
+    setRoundScores({});
+    setPlayerCards({});
     setWinnerId('');
   };
 
@@ -234,31 +181,30 @@ export default function GamePlay() {
           </p>
         </div>
 
-          {/* Game Stats */}
-          <div className={`${isMobile ? 'mb-4' : 'mb-6'} flex flex-wrap gap-4 text-sm text-white/70 justify-center`}>
-            <div className="flex items-center gap-1">
-              <Clock className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
-              Round {game.currentRound + 1}
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
-              {activePlayers.length} active players
-            </div>
-            <div className="flex items-center gap-1">
-              <Target className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
-              Limit: {game.scoreLimit}
-            </div>
+        {/* Game Stats */}
+        <div className={`${isMobile ? 'mb-4' : 'mb-6'} flex flex-wrap gap-4 text-sm text-white/70 justify-center`}>
+          <div className="flex items-center gap-1">
+            <Clock className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+            Round {game.currentRound + 1}
           </div>
-            
-          {game.winner && (
-            <div className="text-center">
-              <Badge className="bg-gradient-gold text-navy-deep text-lg px-4 py-2">
-                <Trophy className="w-5 h-5 mr-2" />
-                {game.winner.name} Wins!
-              </Badge>
-            </div>
-          )}
+          <div className="flex items-center gap-1">
+            <Users className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+            {activePlayers.length} active players
+          </div>
+          <div className="flex items-center gap-1">
+            <Target className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+            Limit: {game.scoreLimit}
+          </div>
         </div>
+          
+        {game.winner && (
+          <div className="text-center">
+            <Badge className="bg-gradient-gold text-navy-deep text-lg px-4 py-2">
+              <Trophy className="w-5 h-5 mr-2" />
+              {game.winner.name} Wins!
+            </Badge>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Player Scores */}
@@ -299,93 +245,93 @@ export default function GamePlay() {
                   {useCardInput ? "Select cards for each player" : "Enter manual scores"}
                 </div>
 
-                  {/* Winner Selection */}
-                  <div className="mb-4">
-                    <Label className={`${isMobile ? 'text-sm' : 'text-base'} font-medium mb-2 block text-white`}>Round Winner</Label>
-                    <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
-                      {activePlayers.map(player => (
-                        <Button
-                          key={player.id}
-                          variant={winnerId === player.id ? "casino" : "outline"}
-                          size={isMobile ? "sm" : "default"}
-                          onClick={() => setWinnerId(player.id)}
-                          className={winnerId === player.id ? 'bg-gold text-black' : 'ios-button text-white border-white/30'}
-                        >
-                          <Trophy className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-2`} />
-                          {player.name}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Score/Card Inputs */}
-                  <div className="space-y-4 mb-6">
+                {/* Winner Selection */}
+                <div className="mb-4">
+                  <Label className={`${isMobile ? 'text-sm' : 'text-base'} font-medium mb-2 block text-white`}>Round Winner</Label>
+                  <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
                     {activePlayers.map(player => (
-                      <div key={player.id}>
-                        {useCardInput ? (
-                          <CardSelector
-                            playerName={player.name}
-                            selectedCards={playerCards[player.id] || []}
-                            onCardsChange={(cards) => {
-                              setPlayerCards(prev => ({
-                                ...prev,
-                                [player.id]: cards
-                              }));
-                            }}
-                            disabled={winnerId === player.id}
-                          />
-                        ) : (
-                          <>
-                            <Label className="text-sm mb-1 block">
-                              {player.name} 
-                              {winnerId === player.id && (
-                                <Badge variant="outline" className="ml-2 text-xs">Winner - 0 pts</Badge>
-                              )}
-                            </Label>
-                            <Input
-                              type="number"
-                              placeholder="Card points"
-                              value={winnerId === player.id ? '0' : roundScores[player.id] || ''}
-                              onChange={(e) => {
-                                if (winnerId !== player.id) {
-                                  setRoundScores(prev => ({
-                                    ...prev,
-                                    [player.id]: e.target.value
-                                  }));
-                                }
-                              }}
-                              disabled={winnerId === player.id}
-                              min="0"
-                              className="bg-muted/50"
-                            />
-                          </>
-                        )}
-                      </div>
+                      <Button
+                        key={player.id}
+                        variant={winnerId === player.id ? "casino" : "outline"}
+                        size={isMobile ? "sm" : "default"}
+                        onClick={() => setWinnerId(player.id)}
+                        className={winnerId === player.id ? 'bg-gold text-black' : 'ios-button text-white border-white/30'}
+                      >
+                        <Trophy className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-2`} />
+                        {player.name}
+                      </Button>
                     ))}
                   </div>
+                </div>
 
-                  {/* Action Buttons */}
-                  <div className="space-y-2">
-                    <Button
-                      onClick={submitRound}
-                      disabled={!winnerId || isSubmitting}
-                      variant="casino"
-                      className="w-full bg-gold hover:bg-gold-dark text-black font-semibold"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      {isSubmitting ? "Submitting..." : "Submit Round"}
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      onClick={resetRound}
-                      className="w-full ios-button text-white border-white/30"
-                    >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Reset Form
-                    </Button>
-                  </div>
-                </Card>
+                {/* Score/Card Inputs */}
+                <div className="space-y-4 mb-6">
+                  {activePlayers.map(player => (
+                    <div key={player.id}>
+                      {useCardInput ? (
+                        <CardSelector
+                          playerName={player.name}
+                          selectedCards={playerCards[player.id] || []}
+                          onCardsChange={(cards) => {
+                            setPlayerCards(prev => ({
+                              ...prev,
+                              [player.id]: cards
+                            }));
+                          }}
+                          disabled={winnerId === player.id}
+                        />
+                      ) : (
+                        <>
+                          <Label className="text-sm mb-1 block">
+                            {player.name} 
+                            {winnerId === player.id && (
+                              <Badge variant="outline" className="ml-2 text-xs">Winner - 0 pts</Badge>
+                            )}
+                          </Label>
+                          <Input
+                            type="number"
+                            placeholder="Card points"
+                            value={winnerId === player.id ? '0' : roundScores[player.id] || ''}
+                            onChange={(e) => {
+                              if (winnerId !== player.id) {
+                                setRoundScores(prev => ({
+                                  ...prev,
+                                  [player.id]: e.target.value
+                                }));
+                              }
+                            }}
+                            disabled={winnerId === player.id}
+                            min="0"
+                            className="bg-muted/50"
+                          />
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2">
+                  <Button
+                    onClick={submitRound}
+                    disabled={!winnerId || isSubmitting}
+                    variant="casino"
+                    className="w-full bg-gold hover:bg-gold-dark text-black font-semibold"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {isSubmitting ? "Submitting..." : "Submit Round"}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={resetRound}
+                    className="w-full ios-button text-white border-white/30"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset Form
+                  </Button>
+                </div>
+              </Card>
             </div>
           )}
         </div>
