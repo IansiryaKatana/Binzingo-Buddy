@@ -250,13 +250,14 @@ export default function GamePlay() {
             </div>
           </div>
             
-            {game.winner && (
+          {game.winner && (
+            <div className="text-center">
               <Badge className="bg-gradient-gold text-navy-deep text-lg px-4 py-2">
                 <Trophy className="w-5 h-5 mr-2" />
                 {game.winner.name} Wins!
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
