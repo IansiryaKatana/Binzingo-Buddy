@@ -22,10 +22,10 @@ export default function OfflineGameSetup() {
   const isMobile = useIsMobile();
 
   const addPlayer = () => {
-    if (players.length < 6) {
+    if (players.length < 11) {
       setPlayers([...players, '']);
     } else {
-      toast.error("Maximum 6 players allowed");
+      toast.error("Maximum 11 players allowed");
     }
   };
 
@@ -158,14 +158,14 @@ export default function OfflineGameSetup() {
               <div className="flex items-center gap-2">
                 <Users className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-emerald-bright`} />
                 <Label className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-white`}>
-                  Local Players ({validPlayerCount}/6)
+                  Local Players ({validPlayerCount}/11)
                 </Label>
               </div>
               <Button
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
                 onClick={addPlayer}
-                disabled={players.length >= 6}
+                disabled={players.length >= 11}
                 className="ios-button text-white border-white/30"
               >
                 <Plus className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} mr-1`} />
@@ -197,9 +197,9 @@ export default function OfflineGameSetup() {
               ))}
             </div>
 
-            {players.length < 6 && (
+            {players.length < 11 && (
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-white/70 mt-2`}>
-                You can add up to 6 players total
+                You can add up to 11 players total
               </p>
             )}
           </div>
